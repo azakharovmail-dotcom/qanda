@@ -14,6 +14,10 @@ import { env } from '@/lib/env'
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
 
+  // If Supabase isn't configured, don't block the request — just pass through.
+  // Prevents a hard 500 on every route if env vars are missing/misapplied.
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return response
+
   const supabase = createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
@@ -28,9 +32,14 @@ export async function proxy(request: NextRequest) {
   })
 
   // IMPORTANT: do not run code between createServerClient and getUser().
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Never let a Supabase/network hiccup 500 the page — treat as logged-out.
+  let user = null
+  try {
+    const result = await supabase.auth.getUser()
+    user = result.data.user
+  } catch {
+    user = null
+  }
 
   if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
     const url = request.nextUrl.clone()

@@ -1,0 +1,62 @@
+
+> qanda@0.1.0 build /Users/ruazhah/qanda
+> next build
+
+▲ Next.js 16.2.9 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.0s
+  Running TypeScript ...
+  Finished TypeScript in 3.1s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/31) ...
+  Generating static pages using 7 workers (7/31) 
+  Generating static pages using 7 workers (15/31) 
+  Generating static pages using 7 workers (23/31) 
+✓ Generating static pages using 7 workers (31/31) in 377ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ● /alternatives/[competitor]
+│ ├ /alternatives/slido
+│ ├ /alternatives/mentimeter
+│ ├ /alternatives/menti
+│ └ [+3 more paths]
+├ ƒ /api/health
+├ ƒ /api/questions
+├ ƒ /api/votes
+├ ƒ /auth/callback
+├ ƒ /auth/signout
+├ ƒ /dashboard
+├ ƒ /dashboard/events/[id]
+├ ƒ /dashboard/events/[id]/branding
+├ ƒ /dashboard/events/[id]/export
+├ ƒ /e/[code]
+├ ○ /features
+├ ○ /opengraph-image
+├ ƒ /present/[code]
+├ ○ /pricing
+├ ○ /robots.txt
+├ ƒ /signin
+├ ○ /sitemap.xml
+├ ● /use-cases/[case]
+│ ├ /use-cases/conferences
+│ ├ /use-cases/webinars
+│ ├ /use-cases/lectures
+│ └ [+2 more paths]
+└ ● /vs/[slug]
+  ├ /vs/qanda-vs-slido
+  ├ /vs/qanda-vs-mentimeter
+  ├ /vs/qanda-vs-menti
+  └ [+3 more paths]
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

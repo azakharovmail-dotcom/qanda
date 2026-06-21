@@ -1,8 +1,9 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // Compact, self-contained server bundle for Docker / VPS self-hosting.
-  output: 'standalone',
+  // Standalone output only when self-hosting (Docker/VPS). On Vercel, leave
+  // unset — Vercel configures its own output, and forcing standalone can 500.
+  output: process.env.SELF_HOST === '1' ? 'standalone' : undefined,
   poweredByHeader: false,
   images: {
     // Event logos served from Supabase Storage (added later).
