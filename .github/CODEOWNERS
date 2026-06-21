@@ -1,0 +1,23 @@
+# Code ownership → required reviews.
+#
+# Autonomous agents must NEVER merge changes to these paths without a human.
+# Adding an owner here makes GitHub request that review automatically (enforce
+# via branch protection: "Require review from Code Owners" on main).
+#
+# Replace @OWNER with the real GitHub handle / team before going live.
+
+# Database schema & Row Level Security — security-critical.
+/supabase/migrations/   @OWNER
+
+# Supabase clients (service-role bypasses RLS) — security-critical.
+/lib/supabase/          @OWNER
+
+# Anonymous identity signing (ANON_SECRET, vote/question attribution).
+/lib/anon.ts            @OWNER
+
+# Edge/proxy layer.
+/proxy.ts               @OWNER
+
+# Dependencies & lockfile — supply-chain surface.
+package.json            @OWNER
+pnpm-lock.yaml          @OWNER

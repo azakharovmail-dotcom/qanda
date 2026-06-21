@@ -33,6 +33,12 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# runtime server env (real secrets) — keep the .example templates tracked
+/deploy/.env.prod
+/deploy/.env.staging
+!/deploy/.env.prod.example
+!/deploy/.env.staging.example
+
 # vercel
 .vercel
 

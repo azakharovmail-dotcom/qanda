@@ -1,0 +1,48 @@
+# Two environments from ONE image on a single VPS.
+#
+#   app-prod    → qanda.online           → host 127.0.0.1:3001  (Nginx upstream)
+#   app-staging → staging.qanda.online   → host 127.0.0.1:3002  (Nginx upstream)
+#
+# Only `app-prod` has a `build:` block — it bakes the PUBLIC prod values
+# (NEXT_PUBLIC_*, inlined at build time) into `qanda:latest`. `app-staging`
+# reuses that exact image; its different absolute URLs come from the RUNTIME
+# `SITE_URL` in deploy/.env.staging (lib/env.ts prefers SITE_URL over the
+# build-time NEXT_PUBLIC_SITE_URL). Server-only secrets are injected per
+# container via env_file — never baked into the image.
+
+services:
+  app-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+    image: qanda:latest
+    env_file: ./deploy/.env.prod
+    ports:
+      - '127.0.0.1:3001:3000'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3000/api/health']
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  app-staging:
+    # No build — reuses the prod-built qanda:latest image.
+    image: qanda:latest
+    env_file: ./deploy/.env.staging
+    ports:
+      - '127.0.0.1:3002:3000'
+    restart: unless-stopped
+    depends_on:
+      - app-prod
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3000/api/health']
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3

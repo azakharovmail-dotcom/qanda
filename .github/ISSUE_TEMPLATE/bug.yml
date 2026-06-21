@@ -1,0 +1,81 @@
+name: Баг / Bug report
+description: Сообщить об ошибке в qanda.online
+title: '[bug]: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за отчёт! Заполните поля ниже — это ускорит починку
+        (в том числе автономным агентом).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Что произошло?
+      description: Опишите проблему. Что вы увидели вместо ожидаемого?
+      placeholder: При отправке вопроса появляется «Не удалось отправить»…
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги воспроизведения
+      description: Минимальная последовательность действий.
+      placeholder: |
+        1. Открыть /e/ABC123
+        2. Ввести вопрос и нажать «Отправить»
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Ожидаемое поведение
+      placeholder: Вопрос должен отправиться и показать «на модерацию».
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Серьёзность / Severity
+      description: Влияет на приоритет в автономной очереди (sev:high → sev:low).
+      options:
+        - 'sev:high — блокирует участников/ведущего, утечка данных, падение'
+        - 'sev:med — заметная поломка, есть обходной путь'
+        - 'sev:low — косметика, мелкая неточность'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Область / Area
+      options:
+        - participant (страница участника /e/CODE)
+        - presenter (экран ведущего /present/CODE)
+        - organizer (кабинет, создание событий, модерация)
+        - api (route handlers, запись)
+        - realtime (живое обновление списка)
+        - branding / UI
+        - auth / sign-in
+        - infra / build / deploy
+        - other
+    validations:
+      required: true
+
+  - type: input
+    id: env
+    attributes:
+      label: Окружение
+      description: Браузер/устройство, URL события (без секретов).
+      placeholder: 'iOS Safari 18, /e/ABC123'
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Логи / скриншоты
+      description: Консоль браузера, сетевые ответы, скриншоты — что есть.

@@ -1,0 +1,98 @@
+name: Deploy
+
+# Two flows from one image:
+#   • push to main          → run gates, then deploy STAGING (staging.qanda.online)
+#   • workflow_dispatch with promote=true → deploy PROD (qanda.online)
+#
+# SSH secrets (configure AFTER the repo exists, under
+# Settings → Secrets and variables → Actions):
+#   SSH_HOST  – VPS IP / hostname
+#   SSH_USER  – deploy user (e.g. root or deploy)
+#   SSH_KEY   – private key whose public half is in the server's authorized_keys
+# Gate the live deploy on the repo variable DEPLOY_ENABLED=true so it is a
+# no-op until the server is provisioned.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      promote:
+        description: 'Deploy PROD (qanda.online). false = no-op.'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ── Gates: must be green before any deploy. ──────────────────────────────
+  gate:
+    name: typecheck · lint · test · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  # ── Deploy STAGING on green main: rebuild the image, restart staging. ────
+  deploy-staging:
+    name: deploy staging
+    needs: gate
+    if: ${{ github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH → build image + restart staging
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /opt/qanda
+            git pull --ff-only
+            docker compose build app-prod
+            docker compose up -d app-staging
+
+  # ── Promote to PROD: manual, explicit. Reuses the already-built image. ───
+  promote-prod:
+    name: promote prod
+    needs: gate
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.promote == 'true' && vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH → restart prod
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /opt/qanda
+            docker compose up -d app-prod

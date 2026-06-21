@@ -1,0 +1,41 @@
+# Keep the build context tiny. Anything the build actually needs
+# (source, public/, package.json, pnpm-lock.yaml, configs) is NOT listed here.
+
+# deps & build output (reinstalled / regenerated inside the image)
+node_modules
+.next
+out
+build
+coverage
+
+# vcs & CI
+.git
+.gitignore
+.github
+
+# local env / secrets (NEXT_PUBLIC_* come in via build args)
+.env
+.env.*
+!.env.example
+deploy/.env.prod
+deploy/.env.staging
+
+# tooling that never runs inside the image
+tests
+test-results
+playwright-report
+supabase
+scripts
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# docs & misc
+*.md
+.DS_Store
+.vercel
+Dockerfile
+.dockerignore

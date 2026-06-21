@@ -1,0 +1,123 @@
+name: Autonomous Agent Loop
+
+# Autonomous maintenance loop. Picks the top-priority open issue, reproduces it
+# with a failing test, fixes it, runs the gates, and opens ONE PR. It NEVER
+# pushes to main and NEVER touches the human-gated paths (see AGENTS.md).
+#
+# KILL SWITCH: the very first step exits 0 unless the repo variable
+# `AGENT_LOOP_ENABLED` is exactly "true". Flip it under
+# Settings → Secrets and variables → Actions → Variables. Default = off.
+
+on:
+  schedule:
+    - cron: '0 */4 * * *' # every 4 hours
+  workflow_dispatch: {}
+
+# One loop at a time; don't stack runs on top of each other.
+concurrency:
+  group: agent-loop
+  cancel-in-progress: false
+
+permissions:
+  contents: write # create the agent/<n> branch
+  issues: read # read the backlog
+  pull-requests: write # open the PR
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    steps:
+      # ── 1. Kill switch (real) ────────────────────────────────────────────
+      - name: Kill switch
+        run: |
+          if [ "${{ vars.AGENT_LOOP_ENABLED }}" != "true" ]; then
+            echo "AGENT_LOOP_ENABLED != 'true' — kill switch off. Exiting."
+            exit 0
+          fi
+          echo "Kill switch ON — proceeding."
+
+      - name: Checkout
+        if: ${{ vars.AGENT_LOOP_ENABLED == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enable Corepack (pnpm)
+        if: ${{ vars.AGENT_LOOP_ENABLED == 'true' }}
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        if: ${{ vars.AGENT_LOOP_ENABLED == 'true' }}
+        with:
+          node-version: 20
+          cache: pnpm
+
+      # ── 2. Guardrail: cap concurrent agent PRs at 3 (real) ───────────────
+      - name: Enforce open-agent-PR cap (max 3)
+        if: ${{ vars.AGENT_LOOP_ENABLED == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          OPEN=$(gh pr list --state open --label agent --json number --jq 'length')
+          echo "Open agent PRs: $OPEN"
+          if [ "$OPEN" -ge 3 ]; then
+            echo "At capacity (>=3 open agent PRs). Skipping this run."
+            exit 0
+          fi
+
+      # ── 3. Pick the top-priority open issue (real) ───────────────────────
+      # Priority order: sev:high → sev:med → sev:low; oldest first within a tier.
+      - name: Select target issue
+        if: ${{ vars.AGENT_LOOP_ENABLED == 'true' }}
+        id: pick
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ISSUE=""
+          for LABEL in "sev:high" "sev:med" "sev:low"; do
+            ISSUE=$(gh issue list \
+              --state open \
+              --label "$LABEL" \
+              --search "sort:created-asc -label:needs-human -label:wontfix" \
+              --json number --jq '.[0].number // empty')
+            if [ -n "$ISSUE" ]; then
+              echo "Selected #$ISSUE (label $LABEL)"
+              break
+            fi
+          done
+          if [ -z "$ISSUE" ]; then
+            echo "No eligible open issue. Nothing to do."
+            echo "issue=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "issue=$ISSUE" >> "$GITHUB_OUTPUT"
+
+      - name: Install deps
+        if: ${{ vars.AGENT_LOOP_ENABLED == 'true' && steps.pick.outputs.issue != '' }}
+        run: pnpm install --frozen-lockfile
+
+      # ── 4. Run the agent (SKELETON / TODO) ───────────────────────────────
+      # The actual Claude Code invocation is wired up once the runner has a
+      # model token configured. The intended autonomous procedure is:
+      #
+      #   a. git switch -c agent/${{ steps.pick.outputs.issue }}
+      #   b. Reproduce the bug with a FAILING regression test (test-first).
+      #   c. Implement the minimal, single-purpose fix.
+      #   d. Run the gates locally: pnpm typecheck && pnpm lint && pnpm test && pnpm build
+      #   e. Hard stop if the diff touches any human-gated path:
+      #        supabase/migrations/**, lib/supabase/**, lib/anon.ts, proxy.ts,
+      #        auth, RLS, package.json, pnpm-lock.yaml  → bail, label needs-human.
+      #   f. Open ONE PR (label: agent) linking the issue, with the preview URL.
+      #
+      # NEVER push to main. NEVER exceed 3 open agent PRs (checked in step 2).
+      - name: Run agent (placeholder)
+        if: ${{ vars.AGENT_LOOP_ENABLED == 'true' && steps.pick.outputs.issue != '' }}
+        run: |
+          echo "TODO: invoke Claude Code on issue #${{ steps.pick.outputs.issue }}"
+          echo "Branch would be: agent/${{ steps.pick.outputs.issue }}"
+          echo "Gates that must pass before opening a PR:"
+          echo "  pnpm typecheck && pnpm lint && pnpm test && pnpm build"
+          echo "Human-gated paths that abort the run if touched:"
+          echo "  supabase/migrations, lib/supabase, lib/anon.ts, proxy.ts, auth, RLS, package.json, lockfile"

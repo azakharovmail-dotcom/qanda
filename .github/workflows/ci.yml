@@ -1,0 +1,85 @@
+name: CI
+
+# Runs on every PR and on pushes to any branch EXCEPT main (main is protected;
+# code reaches it only via reviewed PRs, which already ran this on the PR).
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Always-on gates: no secrets needed, must be green for every change. ──
+  gates:
+    name: typecheck · lint · unit · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build
+        # Build runs WITHOUT Supabase secrets on purpose: data routes are
+        # `force-dynamic` so they aren't prerendered, and lib/env tolerates
+        # missing vars at build time.
+        run: pnpm build
+
+  # ── Optional integration + e2e: only when Supabase secrets are configured. ──
+  # Guarded so forks / secret-less runs skip cleanly instead of failing red.
+  integration:
+    name: integration · e2e (requires secrets)
+    runs-on: ubuntu-latest
+    needs: gates
+    # Skip entirely when the URL secret is absent (e.g. forked PRs).
+    if: ${{ vars.SUPABASE_CONFIGURED == 'true' }}
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ANON_SECRET: ${{ secrets.ANON_SECRET }}
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      QANDA_TEST_EVENT_CODE: ${{ vars.QANDA_TEST_EVENT_CODE }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: RLS integration tests
+        run: pnpm test:integration
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E (participant happy path)
+        run: pnpm e2e

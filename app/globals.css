@@ -1,26 +1,354 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ── Brand ────────────────────────────────────────────────────────────
+     «Есть вопросы» yellow + dark ink. --brand is overridable per-event at
+     runtime via inline style on /e and /present. Text on yellow is DARK. */
+  --brand: #fee600;
+  --brand-foreground: #2b2d33;
+  --brand-deep: #ffc000; /* hover / press */
+  --lime: #bdff00; /* kicker on dark surfaces */
+
+  /* ── Ink / neutral ramp ─────────────────────────────────────────────── */
+  --ink-900: #211c2c;
+  --ink-800: #2b2d33; /* primary text */
+  --ink-700: #303030; /* large display headings */
+  --ink-600: #4b4b64;
+  --ink-500: #706e82; /* secondary text */
+  --ink-400: #73767d; /* captions / kickers */
+  --ink-300: #9a97a0; /* placeholder / disabled */
+  --ink-200: #dcdce1; /* borders / hairlines */
+  --ink-100: #e9eaea; /* page background grey */
+  --ink-50: #f4f4f4; /* card / panel surface */
+  --white: #ffffff;
+
+  /* ── Accent families (soft tints under dark text) ───────────────────── */
+  --sochi-15: #e2eaf7;
+  --sochi-35: #adc5ed;
+  --sochi-60: #93afe1;
+  --sochi-90: #7d9bcd;
+  --sochi-text: #4b6491;
+
+  --paris-15: #e7e3f6;
+  --paris-30: #d2cbf0;
+  --paris-60: #a593e4;
+  --paris-100: #7864d7;
+  --paris-text: #5544a8;
+
+  --manila-15: #ddf0ef;
+  --manila-35: #9cd8d8;
+  --manila-60: #5bafae;
+  --manila-100: #206d72;
+  --manila-text: #1c5b5f;
+
+  --tunis-30: #dbcbd6;
+  --tunis-60: #a88aa0;
+  --tunis-100: #7c5e76;
+  --tunis-text: #604a5c;
+
+  --porto-15: #f6e9e9;
+  --porto-30: #ebc8c8;
+  --porto-60: #d49a9a;
+  --porto-100: #b26e6e;
+  --porto-text: #8c5151;
+
+  --live: #e5484d; /* live / record dot */
+
+  /* ── Semantic surfaces ──────────────────────────────────────────────── */
+  --background: #e9eaea; /* editorial light-grey page */
+  --foreground: #2b2d33; /* ink-800 */
+  --card: #ffffff;
+  --muted: #f4f4f4; /* ink-50 */
+  --muted-foreground: #706e82; /* ink-500 */
+  --border: #dcdce1; /* ink-200 */
+
+  /* ── Radii ──────────────────────────────────────────────────────────── */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius: 24px; /* card */
+  --radius-lg: 32px;
+  --radius-xl: 48px;
+  --radius-pill: 999px;
+
+  /* ── Soft shadows ───────────────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(33, 28, 44, 0.06);
+  --shadow-sm: 0 2px 8px rgba(33, 28, 44, 0.08);
+  --shadow-md: 0 8px 24px rgba(33, 28, 44, 0.1);
+  --shadow-lg: 0 16px 48px rgba(33, 28, 44, 0.12);
+
+  /* ── Motion ─────────────────────────────────────────────────────────── */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
 }
 
 @theme inline {
+  /* Brand + semantic surfaces → bg-brand, text-foreground, border-border, … */
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-deep: var(--brand-deep);
+  --color-lime: var(--lime);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+
+  /* Ink ramp → text-ink-700, bg-ink-100, border-ink-200, … */
+  --color-ink-900: var(--ink-900);
+  --color-ink-800: var(--ink-800);
+  --color-ink-700: var(--ink-700);
+  --color-ink-600: var(--ink-600);
+  --color-ink-500: var(--ink-500);
+  --color-ink-400: var(--ink-400);
+  --color-ink-300: var(--ink-300);
+  --color-ink-200: var(--ink-200);
+  --color-ink-100: var(--ink-100);
+  --color-ink-50: var(--ink-50);
+
+  /* Accent tints → bg-sochi, text-paris-text, bg-manila-15, … */
+  --color-sochi: var(--sochi-60);
+  --color-sochi-15: var(--sochi-15);
+  --color-sochi-35: var(--sochi-35);
+  --color-sochi-60: var(--sochi-60);
+  --color-sochi-90: var(--sochi-90);
+  --color-sochi-text: var(--sochi-text);
+
+  --color-paris: var(--paris-60);
+  --color-paris-15: var(--paris-15);
+  --color-paris-30: var(--paris-30);
+  --color-paris-60: var(--paris-60);
+  --color-paris-100: var(--paris-100);
+  --color-paris-text: var(--paris-text);
+
+  --color-manila: var(--manila-60);
+  --color-manila-15: var(--manila-15);
+  --color-manila-35: var(--manila-35);
+  --color-manila-60: var(--manila-60);
+  --color-manila-100: var(--manila-100);
+  --color-manila-text: var(--manila-text);
+
+  --color-tunis-30: var(--tunis-30);
+  --color-tunis-60: var(--tunis-60);
+  --color-tunis-100: var(--tunis-100);
+  --color-tunis-text: var(--tunis-text);
+
+  --color-porto: var(--porto-60);
+  --color-porto-15: var(--porto-15);
+  --color-porto-30: var(--porto-30);
+  --color-porto-60: var(--porto-60);
+  --color-porto-100: var(--porto-100);
+  --color-porto-text: var(--porto-text);
+
+  --color-live: var(--live);
+
+  /* Radii → rounded-card, rounded-pill, rounded-xl, … */
+  --radius-card: var(--radius);
+  --radius-pill: var(--radius-pill);
+
+  /* Soft shadows → shadow-soft-sm … shadow-soft-lg */
+  --shadow-soft-xs: var(--shadow-xs);
+  --shadow-soft-sm: var(--shadow-sm);
+  --shadow-soft-md: var(--shadow-md);
+  --shadow-soft-lg: var(--shadow-lg);
+
+  /* Onest (loaded in layout.tsx via --font-inter), Inter fallback. */
+  --font-sans: var(--font-inter), 'Onest', ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  min-height: 100%;
+}
+
+/* ── Editorial decorative backgrounds ──────────────────────────────────── */
+
+/* Miro-style radial dot canvas (stats section). */
+.dot-grid {
+  background-color: #e9eaea;
+  background-image: radial-gradient(#c9cbcb 1.5px, transparent 1.6px);
+  background-size: 26px 26px;
+}
+
+/* Faint square grid-paper (quote section). */
+.grid-paper {
+  background-image:
+    linear-gradient(rgba(43, 45, 51, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 45, 51, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Wrapper for decorative SVG scribbles / floating shapes — never interactive. */
+.scribble {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Idle "floating" of hero shapes (applied to an inner element so it never
+   conflicts with a parallax transform on the parent). */
+@keyframes float-a {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-18px) rotate(6deg);
+  }
+}
+@keyframes float-b {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(14px) rotate(-8deg);
+  }
+}
+.float-a {
+  animation: float-a 7s var(--ease-standard) infinite;
+}
+.float-b {
+  animation: float-b 9s var(--ease-standard) infinite;
+}
+
+/* Live / record dot pulse. */
+@keyframes pulse-live {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+}
+.pulse-live {
+  animation: pulse-live 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float-a,
+  .float-b,
+  .pulse-live {
+    animation: none;
+  }
+}
+
+/* ── Scroll-reveal ─────────────────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.7s var(--ease-standard),
+    transform 0.7s var(--ease-standard);
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Count-up / tabular figures helper. */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* ── Buttons (pill, editorial) — consumed by components/ui.tsx ─────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 120ms var(--ease-standard),
+    background-color 200ms var(--ease-standard),
+    box-shadow 200ms var(--ease-standard),
+    border-color 200ms var(--ease-standard);
+}
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 45%, transparent);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* primary — solid brand yellow pill, DARK ink text. Main CTA. */
+.btn-primary {
+  color: var(--brand-foreground);
+  background: var(--brand);
+}
+.btn-primary:hover {
+  background: var(--brand-deep);
+}
+
+/* secondary — transparent, inset ink hairline, ink text. */
+.btn-secondary {
+  color: var(--ink-800);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ink-800);
+}
+.btn-secondary:hover {
+  background: color-mix(in srgb, var(--ink-800) 6%, transparent);
+}
+
+/* ghost — no fill, no border. */
+.btn-ghost {
+  color: var(--ink-800);
+  background: transparent;
+}
+.btn-ghost:hover {
+  background: color-mix(in srgb, var(--ink-800) 6%, transparent);
+}
+
+/* danger — ink-on-rose destructive. */
+.btn-danger {
+  color: var(--white);
+  background: #d4493f;
+}
+.btn-danger:hover {
+  background: #bb3a31;
+}
+
+/* ── Fields ────────────────────────────────────────────────────────────── */
+.field {
+  background: var(--white);
+  color: var(--foreground);
+  border: 1px solid var(--ink-200);
+  transition:
+    border-color 150ms var(--ease-standard),
+    box-shadow 150ms var(--ease-standard);
+}
+.field::placeholder {
+  color: var(--ink-300);
+}
+.field:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--brand) 70%, var(--ink-200));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 30%, transparent);
 }
