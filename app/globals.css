@@ -199,10 +199,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 clamp(20px, 5vw, 64px); /* page-edge inset, matches section rhythm */
   background: rgba(233, 234, 234, 0.82);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--ink-200);
+  border-bottom: 1px solid #dcdce1; /* === var(--ink-200) */
   z-index: 2000;
 }
 

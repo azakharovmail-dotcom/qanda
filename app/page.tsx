@@ -60,8 +60,12 @@ export default function HomePage() {
       {/* (1) scroll-progress */}
       <ScrollProgress />
 
-      {/* (2) NAV (fixed, 76px) */}
-      <header className={`landing-nav ${sectionX}`}>
+      {/* (2) NAV (fixed, 76px). backdrop-filter is set inline because Tailwind v4 /
+          Lightning CSS strips it from plain CSS rules; inline styles bypass that. */}
+      <header
+        className={`landing-nav ${sectionX}`}
+        style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
+      >
         <div className="flex items-center gap-3" data-hover>
           <Link
             href="/"
