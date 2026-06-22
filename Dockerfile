@@ -21,6 +21,8 @@ ARG NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
     NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
     NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+# Self-host image needs the standalone server (next.config gates it on SELF_HOST).
+ENV SELF_HOST=1
 RUN pnpm build
 
 # ── runner ────────────────────────────────────────────────────────────
