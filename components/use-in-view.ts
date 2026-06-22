@@ -24,6 +24,12 @@ export function useInView<T extends HTMLElement = HTMLElement>(options?: {
     const el = ref.current
     if (!el) return
 
+    // Tell the inline fail-safe (app/layout.tsx) that client reveal logic is
+    // alive, so its timeout doesn't force-reveal everything and steal the
+    // scroll animation. If hydration never runs (a proxy strips/breaks the JS,
+    // etc.), this stays unset and the fail-safe shows all content anyway.
+    ;(window as Window & { __qReveal?: boolean }).__qReveal = true
+
     // Honor reduced motion / no-IO: reveal on the next microtask (not
     // synchronously in the effect body — keeps renders from cascading).
     const reduce =
