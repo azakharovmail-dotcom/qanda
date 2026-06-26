@@ -167,10 +167,12 @@ body {
   min-height: 100%;
 }
 
-/* ── Landing-only aliases ───────────────────────────────────────────────
-   The prototype names a few tokens differently; map them so values copied
-   1:1 from the prototype keep resolving. */
-.landing {
+/* ── Prototype token aliases (global) ───────────────────────────────────
+   The Claude Design prototype names a few tokens differently. Several pages
+   are now ported 1:1 from it (landing, /create, /dashboard admin panel), so
+   these aliases must resolve everywhere — keep them at :root, NOT scoped to
+   .landing (the admin/builder roots use data-builder, not .landing). */
+:root {
   --raif-yellow: var(--brand);
   --raif-yellow-deep: var(--brand-deep);
   --raif-lime: var(--lime);

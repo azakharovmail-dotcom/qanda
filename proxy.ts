@@ -5,11 +5,10 @@ import { env } from '@/lib/env'
 /**
  * Next.js 16 Proxy (formerly `middleware`). Runs before every matched request.
  *
- *  1. Refreshes the Supabase auth session cookie (keeps organizers logged in).
- *  2. Gates /dashboard/** — unauthenticated users are bounced to /signin.
- *
- * NOTE: per Next 16 guidance, proxy must NOT be the only auth gate — the
- * dashboard layout re-checks `auth.getUser()` server-side (defense in depth).
+ * Refreshes the Supabase auth session cookie (keeps an optionally-signed-in
+ * organizer logged in). It no longer gates /dashboard: in the no-registration
+ * model the admin panel is reachable without an account, and the few pages that
+ * still need a user re-check `auth.getUser()` server-side themselves.
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
@@ -41,12 +40,8 @@ export async function proxy(request: NextRequest) {
     user = null
   }
 
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/signin'
-    url.searchParams.set('next', request.nextUrl.pathname)
-    return NextResponse.redirect(url)
-  }
+  // Session is refreshed above; no route is gated here anymore.
+  void user
 
   return response
 }

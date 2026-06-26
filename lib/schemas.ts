@@ -32,16 +32,6 @@ export const voteSchema = z.object({
   questionId: z.uuid(),
 })
 
-export const brandingSchema = z.object({
-  primaryColor: z
-    .string()
-    .regex(/^#[0-9a-fA-F]{6}$/, 'Нужен HEX-цвет, например #2563EB')
-    .optional()
-    .or(z.literal(''))
-    .transform((v) => (v ? v : undefined)),
-  subtitle: optionalText(120),
-})
-
 export const signInSchema = z.object({
   email: z.email('Введите корректный e-mail'),
 })

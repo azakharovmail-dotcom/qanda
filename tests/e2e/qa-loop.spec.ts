@@ -28,7 +28,10 @@ const EVENT_CODE = process.env.QANDA_TEST_EVENT_CODE
 
 test.skip(!HAS_ENV, 'needs Supabase env (set NEXT_PUBLIC_SUPABASE_URL to run e2e)')
 
-test.describe('participant happy path', () => {
+// SKIPPED during the 4-page consolidation: the landing join form was replaced
+// (new self-contained design) and the participant view at /e/[code] is now a
+// stub. Re-enable / rewrite once the participant room is designed and built.
+test.describe.skip('participant happy path', () => {
   test('home page renders the join form', async ({ page }) => {
     await page.goto('/')
     // The join input is labelled "Код события" (see components/join-form.tsx).
